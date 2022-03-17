@@ -25,6 +25,7 @@ import org.apache.flink.table.data.RowData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.cloud.bigquery.storage.v1.BigQueryReadClient;
 import com.google.cloud.bigquery.storage.v1.ReadSession;
 
 public final class BigQuerySourceFunction extends RichSourceFunction<RowData> implements ResultTypeQueryable<RowData> {
@@ -53,7 +54,13 @@ public final class BigQuerySourceFunction extends RichSourceFunction<RowData> im
 		
 		log.info("Get the data in Arrow format");
 		ReadSession readSession = BigQueryDynamicTableFactory.readSession;
-		log.info("Read Session object in Arrow format:"+readSession);		
+		log.info("Read Session object in Arrow format:"+readSession);
+		
+		// Read rows
+		BigQueryReadClient client = BigQueryReadClient.create();
+		String streamName = readSession.getStreams(0).getName();
+		ReadRows readRows = new ReadRows();
+		readRows.createReadRowRequest(deserializer, streamName, client, ctx);
 	}
 
 	@Override
